@@ -10,8 +10,9 @@ torch::Tensor my_add(torch::Tensor a, torch::Tensor b) {
 }
 
 TORCH_LIBRARY(ofk, m) {
-    m.def("add(Tensor a, Tensor b) -> Tensor", &my_add);
+    m.def("add(Tensor a, Tensor b) -> Tensor");
 }
 
-PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+TORCH_LIBRARY_IMPL(ofk, CUDA, m) {
+    m.impl("add", &my_add);
 }
