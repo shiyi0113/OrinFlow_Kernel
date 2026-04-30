@@ -10,8 +10,8 @@ __global__ void add_kernel(const float* a, const float* b, float* out, size_t si
 }
 
 
-void launch_add_kernel_float(const float* a, const float* b, float* out, size_t size) {
+void launch_add_kernel_float(const float* a, const float* b, float* out, size_t size, cudaStream_t stream) {
     int threads = 256;
     int blocks = (size + threads - 1) / threads;
-    add_kernel<<<blocks, threads>>>(a, b, out, size);
+    add_kernel<<<blocks, threads, 0, stream>>>(a, b, out, size);
 }

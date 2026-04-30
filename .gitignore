@@ -4,3 +4,4 @@ orinflow_kernel/
 build/
 _cmake_build/
 __pycache__/
+.venv/
