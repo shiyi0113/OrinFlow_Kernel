@@ -2,7 +2,8 @@
 #include <stddef.h>
 
 
-__global__ void add_kernel(const float* a, const float* b, float* out, size_t size) {
+__global__ 
+void add_kernel(const float* a, const float* b, float* out, size_t size) {
     size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size) {
         out[idx] = a[idx] + b[idx];

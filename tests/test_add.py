@@ -12,11 +12,11 @@ def test_my_cuda_add():
         torch.ops.ofk.add(a, b)
     torch.cuda.synchronize()
     
-    torch.cuda.cudart().cudaProfilerStart()   # ← profile 从这里开始
+    torch.cuda.cudart().cudaProfilerStart()   
     my_output = torch.ops.ofk.add(a, b)
     torch.cuda.synchronize()
     torch_output = a + b
-    torch.cuda.cudart().cudaProfilerStop()    # ← profile 到这里结束
+    torch.cuda.cudart().cudaProfilerStop()   
     
     torch.testing.assert_close(my_output, torch_output)
     
