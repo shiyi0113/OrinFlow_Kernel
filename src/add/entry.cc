@@ -9,7 +9,7 @@ torch::Tensor my_add(torch::Tensor a, torch::Tensor b) {
     return out;
 }
 
-TORCH_LIBRARY(my_lib, m) {
+TORCH_LIBRARY(ofk, m) {
     m.def("add(Tensor a, Tensor b) -> Tensor", &my_add);
 }
 
