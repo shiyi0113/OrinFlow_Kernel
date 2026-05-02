@@ -1,6 +1,5 @@
 #include <cuda_runtime.h>
 
-
 static __device__ 
 float warp_reduce_shfl(float val) {
     val += __shfl_down_sync(0xffffffff, val, 16);
@@ -11,45 +10,40 @@ float warp_reduce_shfl(float val) {
     return val;
 }
 
-__global__
-void reduce_kernel(const float* x, float* y, int n)
+__global__ 
+void reduce_kernel(const float *x, float *y, int n)
 {
     extern __shared__ float smem[];
-    
     int tid = threadIdx.x;
-    int lane = tid & 31;
-    int warpId = tid >> 5;
-
-    const float4* x4 = reinterpret_cast<const float4*>(x);
-    int n4 = n >> 2; 
-
-    int idx = blockIdx.x * (blockDim.x * 2) + tid;
-
-    float4 va = (idx < n4)              ? x4[idx]              : make_float4(0,0,0,0);
-    float4 vb = (idx + blockDim.x < n4) ? x4[idx + blockDim.x] : make_float4(0,0,0,0);
-
-    float sum = (va.x + va.y) + (va.z + va.w)
-              + (vb.x + vb.y) + (vb.z + vb.w);
-
-    // tail: at most 3 elements, handled by first threads of block 0
-    int tail = n & 3;
-    if (blockIdx.x == 0 && tid < tail)
-        sum += x[(n4 << 2) + tid];
-
+    int idx = blockDim.x * blockIdx.x * 8 + threadIdx.x;
+    float a = (idx < n)                  ? x[idx]                : 0.0f;
+    float b = (idx + blockDim.x < n)     ? x[idx + blockDim.x]   : 0.0f;
+    float c = (idx + blockDim.x * 2 < n) ? x[idx + blockDim.x*2] : 0.0f;
+    float d = (idx + blockDim.x * 3 < n) ? x[idx + blockDim.x*3] : 0.0f;
+    float e = (idx + blockDim.x * 4 < n) ? x[idx + blockDim.x*4] : 0.0f;
+    float f = (idx + blockDim.x * 5 < n) ? x[idx + blockDim.x*5] : 0.0f;
+    float g = (idx + blockDim.x * 6 < n) ? x[idx + blockDim.x*6] : 0.0f;
+    float h = (idx + blockDim.x * 7 < n) ? x[idx + blockDim.x*7] : 0.0f;
+    
+    float sum = (a+b) + (c+d) + (e+f) + (g+h);
+    int lane   = tid % 32;
+    int warpId = tid / 32;
+    
     sum = warp_reduce_shfl(sum);
-    if (lane == 0) smem[warpId] = sum;
+    if(lane == 0) smem[warpId] = sum;
     __syncthreads();
 
     int numWarps = blockDim.x / 32;
-    if (warpId == 0) {
+    if(warpId == 0){
         sum = (lane < numWarps) ? smem[lane] : 0.0f;
         sum = warp_reduce_shfl(sum);
     }
-    if (tid == 0) atomicAdd(y, sum);
-}
 
-void reduce(const float* d_x, float* d_y, int num, cudaStream_t stream){
+    if(tid == 0) atomicAdd(y, sum);
+}
+void reduce(const float *d_x, float *d_y, int n, cudaStream_t stream)
+{
     int block_size = 256;
-    int grid_size = (num + block_size*8 - 1)/(block_size*8);
-    reduce_kernel<<<grid_size, block_size, block_size/32 * sizeof(float)>>>(d_x, d_y, num);
+    int grid_size = (n + block_size*8 - 1) / (block_size*8);
+    reduce_kernel<<<grid_size, block_size, block_size/32 * sizeof(float), stream>>>(d_x, d_y, n);
 }

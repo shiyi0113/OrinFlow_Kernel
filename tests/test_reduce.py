@@ -2,9 +2,9 @@ import torch
 import ofk
 
 def test_my_cuda_reduce():
-    print("开始测试 reduce...")
-
-    x = torch.randn(1024 * 1024, dtype=torch.float32, device="cuda")
+    print("🚀 开始测试 reduce...")
+    size = (10240 * 10240)
+    x = torch.randn(size, dtype=torch.float32, device="cuda")
 
     # warmup
     for _ in range(10):
@@ -21,7 +21,7 @@ def test_my_cuda_reduce():
     print("reduce (1M): PASS")
 
 def test_reduce_edge_cases():
-    print("开始测试 reduce 边界...")
+    print("🚀 开始测试 reduce 边界...")
 
     for n in [1, 255, 256, 257, 1023, 1024, 100003]:
         x = torch.ones(n, dtype=torch.float32, device="cuda")

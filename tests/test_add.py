@@ -2,11 +2,12 @@ import torch
 import ofk 
 
 def test_my_cuda_add():
-    print("🚀 开始测试...")
+    print("🚀 开始测试add...")
     
-    size = (1024, 1024)
+    size = (10240, 10240)
     a = torch.randn(size, dtype=torch.float32, device='cuda')
     b = torch.randn(size, dtype=torch.float32, device='cuda')
+
     # warmup
     for _ in range(10):
         torch.ops.ofk.add(a, b)
