@@ -7,7 +7,7 @@ void gemm_kernel(const float* A, const float* B, float* C,
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if(row < M && col > N){
+    if(row < M && col < N){
         float sum = 0.0f;
         for(int i = 0; i < K; ++i){
             float a_val = A[row * K + i];
