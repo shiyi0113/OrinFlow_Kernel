@@ -5,3 +5,4 @@ build/
 _cmake_build/
 __pycache__/
 .venv/
+*.txt

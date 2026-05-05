@@ -1,25 +1,21 @@
 import torch
 import ofk
 
-
 def test_gemm():
     print("开始测试 gemm...")
     M, N, K = 4096, 24576, 1536
-    A = torch.randn(M, K, dtype=torch.float32, device="cuda")
-    B = torch.randn(K, N, dtype=torch.float32, device="cuda")
-
+    A = torch.randn(M, K, dtype=torch.bfloat16, device="cuda")
+    B = torch.randn(K, N, dtype=torch.bfloat16, device="cuda")
     for _ in range(10):
-        torch.ops.ofk.gemm(A, B)
+        torch.ops.ofk.gemm_cute(A, B)
     torch.cuda.synchronize()
     torch.cuda.cudart().cudaProfilerStart()
-    out = torch.ops.ofk.gemm(A, B)
-    torch.cuda.synchronize()
     ref = torch.mm(A, B)
+    out = torch.ops.ofk.gemm_cute(A, B)
+    torch.cuda.synchronize()
     torch.cuda.cudart().cudaProfilerStop()
-
-    torch.testing.assert_close(out, ref, atol=1e-4, rtol=1e-4)
-    print(f"gemm [{M}, {K}] x [{K}, {N}]: PASS")
-
+    torch.testing.assert_close(out, ref, atol=1e-2, rtol=1e-2)
+    print(f"gemm_cute [{M}, {K}] x [{K}, {N}]: PASS")
 
 def test_gemm_shapes():
     print("开始测试 gemm 不同形状...")
@@ -38,7 +34,6 @@ def test_gemm_shapes():
         torch.testing.assert_close(out, ref, atol=1e-4, rtol=1e-4)
         print(f"  (m={M:5d}, n={N:5d}, k={K:5d}): PASS")
     print("gemm shape 测试: PASS")
-
 
 if __name__ == "__main__":
     test_gemm()

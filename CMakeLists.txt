@@ -21,6 +21,7 @@ file(GLOB_RECURSE SRC_FILES
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rd/cutlass/include
     ${TORCH_INCLUDE_DIRS}
     ${Python3_INCLUDE_DIRS}
 )
@@ -30,6 +31,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 target_compile_options(${PROJECT_NAME} PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-D_GLIBCXX_USE_CXX11_ABI=1>
+    $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler /Zc:preprocessor>
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
